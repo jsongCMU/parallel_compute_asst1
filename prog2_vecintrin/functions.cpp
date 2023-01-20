@@ -81,8 +81,32 @@ void clampedExpSerial(float* values, int* exponents, float* output, int N) {
 }
 
 void clampedExpVector(float* values, int* exponents, float* output, int N) {
-    // Implement your vectorized version of clampedExpSerial here
-    //  ...
+    __cmu418_vec_float x, result, xpower, vectorThreshold;
+    __cmu418_vec_int y, vectorZero, vectorOne, vector_is_odd;
+    __cmu418_mask maskAll, mask_yGTZ, mask_is_odd, mask_clamp;
+    maskAll = _cmu418_init_ones();
+    vectorZero = _cmu418_vset_int(0);
+    vectorOne = _cmu418_vset_int(1);
+    vectorThreshold = _cmu418_vset_float(4.18);
+    for (int i=0; i<N; i+=VECTOR_WIDTH) {
+        _cmu418_vload_float(x, values+i, maskAll); // x = values[i];
+        _cmu418_vset_float(result, 1.0, maskAll); // result = 1.f;
+        _cmu418_vload_int(y, exponents+i, maskAll); // y = exponents[i];
+        _cmu418_vmove_float(xpower, x, maskAll); // xpower = x;
+        _cmu418_vgt_int(mask_yGTZ, y, vectorZero, maskAll); // (y>0)
+        while(_cmu418_cntbits(mask_yGTZ)) // while(y>0)
+        {
+            _cmu418_vbitand_int(vector_is_odd, y, vectorOne, maskAll); // y & 0x1
+            _cmu418_vgt_int(mask_is_odd, vector_is_odd, vectorZero, maskAll); // Convert to mask
+            _cmu418_vmult_float(result, result, xpower, mask_is_odd); // if(...) result *= xpower;
+            _cmu418_vmult_float(xpower, xpower, xpower, maskAll); // xpower = xpower * xpower;
+            _cmu418_vshiftright_int(y, y, vectorOne, maskAll); // y >>= 1;
+            _cmu418_vgt_int(mask_yGTZ, y, vectorZero, maskAll); // (y>0)
+        }
+        _cmu418_vgt_float(mask_clamp, result, vectorThreshold, maskAll); // result > 4.18f
+        _cmu418_vset_float(result, 4.18, mask_clamp); // if(...) result = 4.18f;
+        _cmu418_vstore_float(output+i, result, maskAll); // output[i] = result;
+    }
 }
 
 
