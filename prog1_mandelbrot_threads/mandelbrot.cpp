@@ -120,13 +120,16 @@ void* workerThreadStart(void* threadArgs) {
 
     WorkerArgs* args = static_cast<WorkerArgs*>(threadArgs);
 
-    // TODO: Implement worker thread here.
-    printf("Hello world from thread %d\n", args->threadId);
+    // Compute rows this thread will operate on
+    int min_per_thread = args->height / args->numThreads;
+    int rem = args->height % args->numThreads;
+    int startRow = min_per_thread * args->threadId + ((args->threadId > rem) ? rem : args->threadId);
+    int endRow = startRow + min_per_thread + ((args->threadId < rem) ? 1 : 0);
+    printf("Thread %d: %d rows [%d, %d)\n", args->threadId, endRow - startRow, startRow, endRow);
+
+    // Compute mandelbrot
     float dx = (args->x1 - args->x0) / args->width;
     float dy = (args->y1 - args->y0) / args->height;
-
-    int startRow = (args->threadId==0) ? (0)   : (450);
-    int endRow =   (args->threadId==0) ? (450) : (900);
     for (int j = startRow; j < endRow; j++) {
         for (int i = 0; i < args->width; ++i) {
             float x = args->x0 + i * dx;
