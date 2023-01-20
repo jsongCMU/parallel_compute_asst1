@@ -118,14 +118,13 @@ typedef struct {
 // Thread entrypoint.
 void* workerThreadStart(void* threadArgs) {
 
+    double startTime = CycleTimer::currentSeconds();
     WorkerArgs* args = static_cast<WorkerArgs*>(threadArgs);
-
     // Compute rows this thread will operate on
     int min_per_thread = args->height / args->numThreads;
     int rem = args->height % args->numThreads;
     int startRow = min_per_thread * args->threadId + ((args->threadId > rem) ? rem : args->threadId);
     int endRow = startRow + min_per_thread + ((args->threadId < rem) ? 1 : 0);
-    printf("Thread %d: %d rows [%d, %d)\n", args->threadId, endRow - startRow, startRow, endRow);
 
     // Compute mandelbrot
     float dx = (args->x1 - args->x0) / args->width;
@@ -139,7 +138,8 @@ void* workerThreadStart(void* threadArgs) {
             args->output[index] = mandel(x, y, args->maxIterations);
         }
     }
-
+    double endTime = CycleTimer::currentSeconds();
+    printf("Thread %d: %3d rows [%3d, %3d) in %d ms\n", args->threadId, endRow - startRow, startRow, endRow, (int)((endTime-startTime)*1000));
     return NULL;
 }
 
