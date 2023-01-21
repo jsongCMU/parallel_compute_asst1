@@ -84,11 +84,11 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
     __cmu418_vec_float x, result, xpower, vectorThreshold;
     __cmu418_vec_int y, vectorZero, vectorOne, vector_is_odd;
     __cmu418_mask maskAll, mask_yGTZ, mask_is_odd, mask_clamp;
-    maskAll = _cmu418_init_ones();
     vectorZero = _cmu418_vset_int(0);
     vectorOne = _cmu418_vset_int(1);
     vectorThreshold = _cmu418_vset_float(4.18);
     for (int i=0; i<N; i+=VECTOR_WIDTH) {
+        maskAll = _cmu418_init_ones(N-i);
         _cmu418_vload_float(x, values+i, maskAll); // x = values[i];
         _cmu418_vset_float(result, 1.0, maskAll); // result = 1.f;
         _cmu418_vload_int(y, exponents+i, maskAll); // y = exponents[i];
