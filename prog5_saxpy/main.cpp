@@ -31,6 +31,7 @@ int main() {
     float* arrayX = new float[N];
     float* arrayY = new float[N];
     float* result = new float[N];
+    float* result_tmp = new float[N];
 
     // initialize array values
     for (unsigned int i=0; i<N; i++)
@@ -38,6 +39,7 @@ int main() {
         arrayX[i] = i;
         arrayY[i] = i;
         result[i] = 0.f;
+        result_tmp[i] = 0.f;
     }
 
     //
@@ -57,10 +59,6 @@ int main() {
            toBW(TOTAL_BYTES, minSerial),
            toGFLOPS(TOTAL_FLOPS, minSerial));
 
-    // Clear out the buffer
-    for (unsigned int i = 0; i < N; ++i)
-        result[i] = 0.f;
-
     //
     // Run the streaming implementation. Repeat three times for robust
     // timing.
@@ -68,7 +66,7 @@ int main() {
     double minStreaming = 1e30;
     for (int i = 0; i < 3; ++i) {
         double startTime =CycleTimer::currentSeconds();
-        saxpyStreaming(N, scale, arrayX, arrayY, result);
+        saxpyStreaming(N, scale, arrayX, arrayY, result_tmp);
         double endTime = CycleTimer::currentSeconds();
         minStreaming = std::min(minStreaming, endTime - startTime);
     }
@@ -78,9 +76,20 @@ int main() {
            toBW(TOTAL_BYTES, minStreaming),
            toGFLOPS(TOTAL_FLOPS, minStreaming));
 
-    // Clear out the buffer
+    // Compare serial and streaming
+    bool correctness = true;
     for (unsigned int i = 0; i < N; ++i)
-        result[i] = 0.f;
+    {
+      correctness = (result[i] == result_tmp[i]) ? correctness : false;
+      if(correctness == false)
+        break;
+    }
+
+    // Clear out the buffer
+    for (unsigned int i = 0; i < N; ++i){
+      result[i] = 0.f;
+      result_tmp[i] = 0.f;
+    }
 
 
     //
@@ -122,6 +131,7 @@ int main() {
     printf("\t\t\t\t(%.2fx speedup from streaming)\n", minSerial/minStreaming);
     printf("\t\t\t\t(%.2fx speedup from ISPC)\n", minSerial/minISPC);
     printf("\t\t\t\t(%.2fx speedup from task ISPC)\n", minSerial/minTaskISPC);
+    printf("Streaming correctness: %s\n", correctness ? "PASS" : "FAIL");
 
     return 0;
 }
