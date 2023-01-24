@@ -122,7 +122,19 @@ float arraySumSerial(float* values, int N) {
 // Assume N % VECTOR_WIDTH == 0
 // Assume VECTOR_WIDTH is a power of 2
 float arraySumVector(float* values, int N) {
-    // Implement your vectorized version here
-    //  ...
-	return 0.f;
+    __cmu418_vec_float sum;
+    __cmu418_mask maskAll;
+    maskAll = _cmu418_init_ones();
+    _cmu418_vset_float(sum, 0.0, maskAll); // float sum = 0;
+    for (int i=0; i<N; i+=VECTOR_WIDTH) { // for (int i=0; i<N; i++)
+      __cmu418_vec_float temp_val;
+      _cmu418_vload_float(temp_val, values+i, maskAll);
+      _cmu418_vadd_float(sum, sum, temp_val, maskAll); // sum += values[i];
+    }
+    int counter = VECTOR_WIDTH;
+    while(counter >>= 1){
+      _cmu418_hadd_float(sum, sum);
+      _cmu418_interleave_float(sum, sum);
+    }
+	return sum.value[0];
 }
