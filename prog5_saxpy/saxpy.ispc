@@ -7,7 +7,7 @@ export void saxpy_ispc(uniform int N,
 {
     foreach (i = 0 ... N) {           
         float temp = 1;
-        for(uniform int j = 0; j < 512; j++)
+        for(uniform int j = 0; j < 128; j++)
         {
           temp *= j+1;
         }
@@ -28,7 +28,7 @@ task void saxpy_ispc_task(uniform int N,
 
     foreach (i = indexStart ... indexEnd) {
         float temp = 1;
-        for(uniform int j = 0; j < 512; j++)
+        for(uniform int j = 0; j < 128; j++)
         {
           temp *= j+1;
         }

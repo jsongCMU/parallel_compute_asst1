@@ -8,7 +8,7 @@ void saxpySerial(int N,
 
     for (int i=0; i<N; i++) {
         float temp = 1;
-        for(int j = 0; j < 512; j++)
+        for(int j = 0; j < 128; j++)
         {
           temp *= j+1;
         }
