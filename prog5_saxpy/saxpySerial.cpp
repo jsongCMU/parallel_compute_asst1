@@ -12,7 +12,7 @@ void saxpySerial(int N,
         {
           temp *= j+1;
         }
-        result[i] = scale*temp + X[i] + Y[i];
+        result[i] = scale * X[i] + Y[i] + temp - temp;
     }
 }
 

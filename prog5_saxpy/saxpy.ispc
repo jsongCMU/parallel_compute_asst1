@@ -11,7 +11,7 @@ export void saxpy_ispc(uniform int N,
         {
           temp *= j+1;
         }
-        result[i] = scale*temp + X[i] + Y[i];
+        result[i] = scale * X[i] + Y[i] + temp - temp;
     }
 }
 
@@ -32,7 +32,7 @@ task void saxpy_ispc_task(uniform int N,
         {
           temp *= j+1;
         }
-        result[i] = scale*temp + X[i] + Y[i];
+        result[i] = scale * X[i] + Y[i] + temp - temp;
     }
 }
 
